@@ -26,12 +26,15 @@ export interface GlobalPlayerContextValue {
     audioDuration: AudioTime;
     audioTime: AudioTime;
     currentTrack: CurrentTrack;
+    formattedDuration: string;
+    formattedTime: string;
     handleCurrentTimeChange: (newTime: number) => void;
     handleLoopChange: () => void;
     handlePlayPause: (payload: PlayPausePayload) => void;
     handleSkip: (payload: TrackSkipPayload) => void;
     handleStop: (resetTime?: boolean) => void;
     handleVolumeChange: (newVolume: number) => void;
+    isPlaying: boolean;
     isShuffle: boolean;
     loop: ILoop;
     shufflePlaylist: () => void;
@@ -63,4 +66,9 @@ export enum ILoop {
     None,
     Playlist,
     Track,
+}
+
+export enum GlobalStylesPayload {
+    Enable = 'enable',
+    Disable = 'disable',
 }

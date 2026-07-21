@@ -24,7 +24,6 @@
 
     border-radius: 50%;
     background-color: black;
-    /* box-shadow: 0 0 2px rgba(black, .8); */
     transition: transform ease-out;
     z-index: 3;
 }

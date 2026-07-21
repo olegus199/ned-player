@@ -1,6 +1,8 @@
 import { nanoid } from 'nanoid';
 import {
+    AudioTime,
     CurrentTrack,
+    GlobalStylesPayload,
     IDTrack,
     ITrack,
     OrUndefined,
@@ -34,4 +36,35 @@ export function shuffleArr<T>(arr: T[]): T[] {
     }
 
     return result;
+}
+
+export function formatAudioTime(seconds: AudioTime): string {
+    if (!seconds) {
+        return '00:00';
+    }
+
+    seconds = Math.floor(seconds);
+
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    const formattedSeconds = remainingSeconds.toString().padStart(2, '0');
+
+    return `${formattedMinutes}:${formattedSeconds}`;
+}
+
+export function setGlobalStyles(payload: GlobalStylesPayload): void {
+    switch (payload) {
+        case GlobalStylesPayload.Disable:
+            document.body.style.cursor = 'grabbing';
+            document.body.style.userSelect = 'none';
+            document.body.style.webkitUserSelect = 'none';
+            break;
+        case GlobalStylesPayload.Enable:
+            document.body.style.cursor = 'default';
+            document.body.style.userSelect = 'auto';
+            document.body.style.webkitUserSelect = 'auto';
+            break;
+    }
 }

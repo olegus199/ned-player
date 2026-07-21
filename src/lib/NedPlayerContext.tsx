@@ -18,7 +18,7 @@ import {
     AudioVolumne,
     ILoop,
 } from './types.ts';
-import { normalizePlaylist, shuffleArr } from './utils.ts';
+import { formatAudioTime, normalizePlaylist, shuffleArr } from './utils.ts';
 
 const GlobalPlayerContext = createContext<OrUndefined<GlobalPlayerContextValue>>(undefined);
 
@@ -47,7 +47,7 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
         unshuffledPlaylist.current = normalized;
     }, [playlist]);
 
-    // Event listeners to set audio duration, time and handle end of a song
+    // Event listeners for audio element
     useEffect(() => {
         const audio = audioRef.current;
 
@@ -81,6 +81,27 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
             audio?.removeEventListener('ended', handleEnd);
         };
     }, [loop, normalizedPlaylist.length, currentIndex]);
+
+    // General event listeners
+    useEffect(() => {
+        function handleKeyboardClick(e: KeyboardEvent): void {
+            const { code } = e;
+
+            switch (code) {
+                case 'Space':
+                    e.preventDefault();
+                    handlePlayPause(isPlaying ? PlayPausePayload.Pause : PlayPausePayload.Play);
+
+                    break;
+            }
+        }
+
+        document.addEventListener('keydown', handleKeyboardClick);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyboardClick);
+        }
+    }, [isPlaying]);
 
     // Play the track when currentIndex changes and playlist was played back
     useEffect(() => {
@@ -165,12 +186,6 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
 
             setCurrentIndex(isLoopPlaylist ? prevLooped : prev);
         }
-
-        // const audio = audioRef.current;
-        //
-        // if (audio && (!audio.paused || audio.ended)) {
-        //     setTimeout(() => audioRef.current?.play(), 0);
-        // }
     }
 
     function loopTrack(): void {
@@ -239,12 +254,15 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
                 audioDuration,
                 audioTime,
                 currentTrack: normalizedPlaylist[currentIndex],
+                formattedDuration: formatAudioTime(audioDuration),
+                formattedTime: formatAudioTime(audioTime),
                 handleCurrentTimeChange,
                 handleLoopChange,
                 handlePlayPause,
                 handleSkip,
                 handleStop: () => { handlePause(true) },
                 handleVolumeChange,
+                isPlaying,
                 isShuffle,
                 loop,
                 shufflePlaylist,
