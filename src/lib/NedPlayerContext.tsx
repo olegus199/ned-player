@@ -8,17 +8,17 @@ import {
 } from 'react';
 import AudioElement from './AudioElement.tsx';
 import {
-    PlayPausePayload,
     TrackSkipPayload,
     OrUndefined,
     GlobalPlayerContextValue,
     GlobalPlayerProviderProps,
-    AudioTime,
     CurrentTrack,
     AudioVolumne,
     ILoop,
+    PlayPausePayload,
 } from './types.ts';
 import { formatAudioTime, normalizePlaylist, shuffleArr } from './utils.ts';
+import useAudioEngine from './hooks/useAudioEngine.tsx';
 
 const GlobalPlayerContext = createContext<OrUndefined<GlobalPlayerContextValue>>(undefined);
 
@@ -30,14 +30,26 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isShuffle, setIsShuffle] = useState(false);
     const [loop, setLoop] = useState<ILoop>(ILoop.None);
-    const [audioDuration, setAudioDuration] = useState<AudioTime>();
-    const [audioTime, setAudioTime] = useState<AudioTime>();
     const [volume, setVolume] = useState<AudioVolumne>();
-    const [isPlaying, setIsPlaying] = useState(false);
 
     const audioRef = useRef<HTMLAudioElement>(null);
     // Saving a ref to an unshuffledPlaylist playlist to reset to it when unshuffling
     const unshuffledPlaylist = useRef<CurrentTrack[]>([]);
+
+    const {
+        audioDuration,
+        audioTime,
+        handlePlayPause,
+        isPlaying,
+        loopTrack,
+        handleCurrentTimeChange,
+    } = useAudioEngine(
+        audioRef,
+        loop,
+        handleChangeTrack,
+        normalizedPlaylist.length,
+        currentIndex,
+    );
 
     // Normalizing playlist if changed from props
     useEffect(() => {
@@ -46,100 +58,6 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
         setNormalizedPlaylist(normalized);
         unshuffledPlaylist.current = normalized;
     }, [playlist]);
-
-    // Event listeners for audio element
-    useEffect(() => {
-        const audio = audioRef.current;
-
-        function setDuration(): void {
-            const duration = audio?.duration;
-
-            setAudioDuration(duration);
-        }
-
-        function setCurrentTime(): void {
-            const time = audio?.currentTime;
-
-            setAudioTime(time);
-        }
-
-        function handleEnd(): void {
-            if (loop === ILoop.Track) {
-                loopTrack();
-            } else {
-                handleChangeTrack(TrackSkipPayload.Next);
-            }
-        }
-
-        audio?.addEventListener('timeupdate', setCurrentTime);
-        audio?.addEventListener('loadedmetadata', setDuration);
-        audio?.addEventListener('ended', handleEnd);
-
-        return () => {
-            audio?.removeEventListener('timeupdate', setCurrentTime);
-            audio?.removeEventListener('loadedmetadata', setDuration);
-            audio?.removeEventListener('ended', handleEnd);
-        };
-    }, [loop, normalizedPlaylist.length, currentIndex]);
-
-    // General event listeners
-    useEffect(() => {
-        function handleKeyboardClick(e: KeyboardEvent): void {
-            const { code } = e;
-
-            switch (code) {
-                case 'Space':
-                    e.preventDefault();
-                    handlePlayPause(isPlaying ? PlayPausePayload.Pause : PlayPausePayload.Play);
-
-                    break;
-            }
-        }
-
-        document.addEventListener('keydown', handleKeyboardClick);
-
-        return () => {
-            document.removeEventListener('keydown', handleKeyboardClick);
-        }
-    }, [isPlaying]);
-
-    // Play the track when currentIndex changes and playlist was played back
-    useEffect(() => {
-        if (isPlaying) {
-            handlePlay();
-        }
-    }, [currentIndex, isPlaying]);
-
-    function handlePlayPause(payload: PlayPausePayload): void {
-        if (payload === PlayPausePayload.Pause) {
-            handlePause();
-        } else {
-            handlePlay();
-        }
-    }
-
-    function handlePlay(): void {
-        if (normalizedPlaylist.length === 0) {
-            return;
-        }
-
-        audioRef.current?.play().then(() => {
-            setIsPlaying(true);
-        });
-    }
-
-    function handlePause(resetTime = false): void {
-        if (normalizedPlaylist.length === 0) {
-            return;
-        }
-
-        audioRef.current?.pause();
-        setIsPlaying(false);
-
-        if (resetTime) {
-            handleCurrentTimeChange(0.0);
-        }
-    }
 
     function handleSkip(payload: TrackSkipPayload): void {
         if (loop === ILoop.Track) {
@@ -164,7 +82,7 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
 
             // Stop the playing if not in playlist loop and it's the last track
             if (!isLoopPlaylist && next > lastIdx) {
-                handlePause(true);
+                handlePlayPause(PlayPausePayload.Pause, true);
                 return;
             }
 
@@ -177,7 +95,7 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
 
             // Stop the playing if not in playlist loop and it's the first track
             if (!isLoopPlaylist && prev < 0) {
-                handlePause(true);
+                handlePlayPause(PlayPausePayload.Pause, true);
                 return;
             }
 
@@ -186,29 +104,6 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
 
             setCurrentIndex(isLoopPlaylist ? prevLooped : prev);
         }
-    }
-
-    function loopTrack(): void {
-        if (!audioRef.current) {
-            return;
-        }
-
-        handleCurrentTimeChange(0.0);
-        handlePlay();
-    }
-
-    function handleCurrentTimeChange(newTime: number): void {
-        const audio = audioRef.current;
-        const duration = audio?.duration;
-
-        if (!audio || !duration) {
-            return;
-        }
-
-        const time = Math.min(newTime * duration, duration);
-        audio.currentTime = time;
-
-        setAudioTime(time);
     }
 
     function handleVolumeChange(newVolume: number): void {
@@ -260,7 +155,7 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
                 handleLoopChange,
                 handlePlayPause,
                 handleSkip,
-                handleStop: () => { handlePause(true) },
+                handleStop: () => { handlePlayPause(PlayPausePayload.Pause, true) },
                 handleVolumeChange,
                 isPlaying,
                 isShuffle,
