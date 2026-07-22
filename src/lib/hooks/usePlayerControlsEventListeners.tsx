@@ -1,19 +1,16 @@
-import { RefObject, useEffect, useRef, useState } from 'react';
+import { RefObject, useEffect, useState } from 'react';
 import { isMobile, isTablet } from 'react-device-detect';
 import { useGlobalPlayerContext } from '../NedPlayerContext';
 import { setGlobalStyles } from '../utils';
-import { GlobalStylesPayload, OrNull, PlayPausePayload } from '../types';
+import { GlobalStylesPayload, OrNull } from '../types';
 
 const usePlayerControlsEventListeners = (progressWrapRef: RefObject<OrNull<HTMLDivElement>>) => {
     const {
         handleCurrentTimeChange,
-        handlePlayPause,
         isPlaying
     } = useGlobalPlayerContext();
 
     const [dragging, setDragging] = useState(false);
-
-    const wasTrackPlaying = useRef(false);
 
     function handleProgressWrapTouchStart(e: TouchEvent): void {
         e.preventDefault();
@@ -28,8 +25,6 @@ const usePlayerControlsEventListeners = (progressWrapRef: RefObject<OrNull<HTMLD
     function handleTouchClickStart(clientX: number): void {
         setGlobalStyles(GlobalStylesPayload.Disable);
         setDragging(true);
-        wasTrackPlaying.current = isPlaying;
-        handlePlayPause(PlayPausePayload.Pause);
 
         calcNewCurrentTime(clientX);
     }
@@ -37,10 +32,6 @@ const usePlayerControlsEventListeners = (progressWrapRef: RefObject<OrNull<HTMLD
     function handlePlayheadClickTouchEnd(): void {
         setGlobalStyles(GlobalStylesPayload.Enable);
         setDragging(false);
-
-        if (wasTrackPlaying.current) {
-            handlePlayPause(PlayPausePayload.Play);
-        }
     }
 
     function handleTouchMove(e: TouchEvent): void {
