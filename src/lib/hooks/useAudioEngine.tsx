@@ -1,5 +1,12 @@
 import { RefObject, useEffect, useState } from 'react';
-import { AudioTime, ILoop, OrNull, PlayPausePayload, TrackSkipPayload } from '../types';
+import {
+    AudioTime,
+    AudioVolume,
+    ILoop,
+    OrNull,
+    PlayPausePayload,
+    TrackSkipPayload
+} from '../types';
 
 const useAudioEngine = (
     audioRef: RefObject<OrNull<HTMLAudioElement>>,
@@ -11,6 +18,7 @@ const useAudioEngine = (
     const [audioDuration, setAudioDuration] = useState<AudioTime>();
     const [audioTime, setAudioTime] = useState<AudioTime>();
     const [isPlaying, setIsPlaying] = useState(false);
+    const [volume, setVolume] = useState<AudioVolume>();
 
     function loopTrack(): void {
         if (!audioRef.current) {
@@ -66,6 +74,17 @@ const useAudioEngine = (
         setAudioTime(time);
     }
 
+    function handleVolumeChange(newVolume: number): void {
+        const audio = audioRef.current;
+
+        if (!audio) {
+            return;
+        }
+
+        audio.volume = newVolume;
+        setVolume(newVolume);
+    }
+
     // Play the track when currentIndex changes and playlist was played back
     useEffect(() => {
         if (isPlaying) {
@@ -77,13 +96,15 @@ const useAudioEngine = (
     useEffect(() => {
         const audio = audioRef.current;
 
-        function setDuration(): void {
+        function handleLoadedMetadata(): void {
             const duration = audio?.duration;
+            const volume = audio?.volume;
 
             setAudioDuration(duration);
+            setVolume(volume);
         }
 
-        function setCurrentTime(): void {
+        function handleTimeUpdate(): void {
             const time = audio?.currentTime;
 
             setAudioTime(time);
@@ -97,13 +118,13 @@ const useAudioEngine = (
             }
         }
 
-        audio?.addEventListener('timeupdate', setCurrentTime);
-        audio?.addEventListener('loadedmetadata', setDuration);
+        audio?.addEventListener('timeupdate', handleTimeUpdate);
+        audio?.addEventListener('loadedmetadata', handleLoadedMetadata);
         audio?.addEventListener('ended', handleEnd);
 
         return () => {
-            audio?.removeEventListener('timeupdate', setCurrentTime);
-            audio?.removeEventListener('loadedmetadata', setDuration);
+            audio?.removeEventListener('timeupdate', handleTimeUpdate);
+            audio?.removeEventListener('loadedmetadata', handleLoadedMetadata);
             audio?.removeEventListener('ended', handleEnd);
         };
     }, [loop, normalizedPlaylistLength, currentIndex]);
@@ -133,8 +154,10 @@ const useAudioEngine = (
         audioTime,
         handleCurrentTimeChange,
         handlePlayPause,
+        handleVolumeChange,
         isPlaying,
         loopTrack,
+        volume,
     };
 };
 

@@ -13,7 +13,6 @@ import {
     GlobalPlayerContextValue,
     GlobalPlayerProviderProps,
     CurrentTrack,
-    AudioVolumne,
     ILoop,
     PlayPausePayload,
 } from './types.ts';
@@ -30,7 +29,6 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isShuffle, setIsShuffle] = useState(false);
     const [loop, setLoop] = useState<ILoop>(ILoop.None);
-    const [volume, setVolume] = useState<AudioVolumne>();
 
     const audioRef = useRef<HTMLAudioElement>(null);
     // Saving a ref to an unshuffledPlaylist playlist to reset to it when unshuffling
@@ -39,10 +37,12 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
     const {
         audioDuration,
         audioTime,
+        handleCurrentTimeChange,
         handlePlayPause,
+        handleVolumeChange,
         isPlaying,
         loopTrack,
-        handleCurrentTimeChange,
+        volume,
     } = useAudioEngine(
         audioRef,
         loop,
@@ -104,17 +104,6 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
 
             setCurrentIndex(isLoopPlaylist ? prevLooped : prev);
         }
-    }
-
-    function handleVolumeChange(newVolume: number): void {
-        const audio = audioRef.current;
-
-        if (!audio) {
-            return;
-        }
-
-        audio.volume = newVolume;
-        setVolume(newVolume);
     }
 
     function shufflePlaylist(): void {

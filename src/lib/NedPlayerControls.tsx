@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from 'react';
 import { useGlobalPlayerContext } from './NedPlayerContext';
 import { ILoop, TrackSkipPayload, PlayPausePayload } from './types';
-import './NedPlayerControls.css';
+import './NedPlayerControls.scss';
 import usePlayerControlsEventListeners from './hooks/usePlayerControlsEventListeners';
 import usePlayerControlsResizeObserver from './hooks/usePlayerControlsResizeObserver';
 
@@ -25,9 +25,23 @@ const NedPlayerControls: FC = () => {
     const progressWrapRef = useRef<HTMLDivElement>(null);
     const progressFillRef = useRef<HTMLDivElement>(null);
     const progressThumbRef = useRef<HTMLDivElement>(null);
+    const volumeWrapRef = useRef<HTMLDivElement>(null);
+    const volumeFillRef = useRef<HTMLDivElement>(null);
+    const volumeThumbRef = useRef<HTMLDivElement>(null);
 
-    const { dragging } = usePlayerControlsEventListeners(progressWrapRef);
-    usePlayerControlsResizeObserver(progressWrapRef, progressFillRef, progressThumbRef);
+    const { dragging } = usePlayerControlsEventListeners(progressWrapRef, volumeWrapRef);
+    usePlayerControlsResizeObserver(
+        {
+            progressWrapRef,
+            progressFillRef,
+            progressThumbRef,
+        },
+        {
+            volumeWrapRef,
+            volumeFillRef,
+            volumeThumbRef,
+        },
+    );
 
     useEffect(() => {
         let text = '';
@@ -61,7 +75,6 @@ const NedPlayerControls: FC = () => {
                     ref={progressThumbRef}
                     style={{
                         cursor: dragging ? 'grabbing' : 'grab',
-                        opacity: dragging ? 1 : '',
                     }}
                 />
                 <div
@@ -71,7 +84,7 @@ const NedPlayerControls: FC = () => {
                 <div className='ned-player__progress-track' />
             </div>
 
-            <div className='buttons-container'>
+            <div className='ned-player__control-buttons'>
                 <button onClick={() => handleSkip(TrackSkipPayload.Previous)}>prev song</button>
                 <button onClick={() => handlePlayPause(isPlaying ? PlayPausePayload.Pause : PlayPausePayload.Play)}>
                     {isPlaying ? 'pause' : 'play'}
@@ -79,8 +92,31 @@ const NedPlayerControls: FC = () => {
                 <button onClick={() => handleStop()}>stop</button>
                 <button onClick={() => handleSkip(TrackSkipPayload.Next)}>next song</button>
                 <button onClick={handleLoopChange}>{loopText}</button>
-                <button onClick={shufflePlaylist}>{isShuffle ? 'Unshuffle' : 'shuffle'}</button>
+                <button onClick={shufflePlaylist}>{isShuffle ? 'Unshuffle' : 'Shuffle'}</button>
             </div>
+
+            <div className='ned-player__volume-container'>
+                <p>Volume: </p>
+                <div
+                    className='ned-player__volume-wrap'
+                    ref={volumeWrapRef}
+                >
+                    <div
+                        className='ned-player__volume-thumb'
+                        ref={volumeThumbRef}
+                        style={{
+                            cursor: dragging ? 'grabbing' : 'grab',
+                        }}
+                    />
+                    <div
+                        className='ned-player__volume-fill'
+                        ref={volumeFillRef}
+                    />
+                    <div className='ned-player__volume-track' />
+                </div>
+            </div>
+
+
             <div>{currentTrack?.title || 'Unkown track'} by {currentTrack?.artist || 'Unkown author'}</div>
             <div>{formattedTime} -- {formattedDuration}</div>
         </div>

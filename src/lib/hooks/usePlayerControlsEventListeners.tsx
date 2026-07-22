@@ -2,46 +2,79 @@ import { RefObject, useEffect, useState } from 'react';
 import { isMobile, isTablet } from 'react-device-detect';
 import { useGlobalPlayerContext } from '../NedPlayerContext';
 import { setGlobalStyles } from '../utils';
-import { GlobalStylesPayload, OrNull } from '../types';
+import { DraggingElement, GlobalStylesPayload, OrNull } from '../types';
 
-const usePlayerControlsEventListeners = (progressWrapRef: RefObject<OrNull<HTMLDivElement>>) => {
-    const {
-        handleCurrentTimeChange,
-        isPlaying
-    } = useGlobalPlayerContext();
+const usePlayerControlsEventListeners = (
+    progressWrapRef: RefObject<OrNull<HTMLDivElement>>,
+    volumeWrapRef: RefObject<OrNull<HTMLDivElement>>
+) => {
+    const { handleCurrentTimeChange, handleVolumeChange } = useGlobalPlayerContext();
 
-    const [dragging, setDragging] = useState(false);
+    const [draggingElement, setDraggingElement] = useState<OrNull<DraggingElement>>(null);
 
     function handleProgressWrapTouchStart(e: TouchEvent): void {
         e.preventDefault();
-        handleTouchClickStart(e.touches[0].clientX);
+        handleTouchClickStart(e.touches[0].clientX, DraggingElement.Progress);
     }
 
     function handleProgressWrapMouseDown(e: MouseEvent): void {
         e.preventDefault();
-        handleTouchClickStart(e.clientX);
+        handleTouchClickStart(e.clientX, DraggingElement.Progress);
     }
 
-    function handleTouchClickStart(clientX: number): void {
-        setGlobalStyles(GlobalStylesPayload.Disable);
-        setDragging(true);
+    function handleVolumeWrapTouchStart(e: TouchEvent): void {
+        e.preventDefault();
+        handleTouchClickStart(e.touches[0].clientX, DraggingElement.Volume);
+    }
 
-        calcNewCurrentTime(clientX);
+    function handleVolumeWrapMouseDown(e: MouseEvent): void {
+        e.preventDefault();
+        handleTouchClickStart(e.clientX, DraggingElement.Volume);
+    }
+
+    function handleTouchClickStart(clientX: number, element: DraggingElement): void {
+        setGlobalStyles(GlobalStylesPayload.Disable);
+        setDraggingElement(element);
+
+        switch (element) {
+            case DraggingElement.Progress:
+                calcNewCurrentTime(clientX);
+                break;
+            case DraggingElement.Volume:
+                calcNewVolume(clientX);
+                break;
+        }
     }
 
     function handlePlayheadClickTouchEnd(): void {
         setGlobalStyles(GlobalStylesPayload.Enable);
-        setDragging(false);
+        setDraggingElement(null);
     }
 
     function handleTouchMove(e: TouchEvent): void {
         e.preventDefault();
-        calcNewCurrentTime(e.touches[0].clientX);
+
+        switch (draggingElement) {
+            case DraggingElement.Progress:
+                calcNewCurrentTime(e.touches[0].clientX);
+                break;
+            case DraggingElement.Volume:
+                calcNewVolume(e.touches[0].clientX);
+                break;
+        }
     }
 
     function handleMouseMove(e: MouseEvent): void {
         e.preventDefault();
-        calcNewCurrentTime(e.clientX);
+
+        switch (draggingElement) {
+            case DraggingElement.Progress:
+                calcNewCurrentTime(e.clientX);
+                break;
+            case DraggingElement.Volume:
+                calcNewVolume(e.clientX);
+                break;
+        }
     }
 
     function calcNewCurrentTime(clientX: number): void {
@@ -58,32 +91,54 @@ const usePlayerControlsEventListeners = (progressWrapRef: RefObject<OrNull<HTMLD
         handleCurrentTimeChange(ratio);
     }
 
+    function calcNewVolume(clientX: number): void {
+        const container = volumeWrapRef.current;
+
+        if (!container) {
+            return;
+        }
+
+        const { left, width } = container.getBoundingClientRect();
+
+        const offsetX = clientX - left;
+        const ratio = Math.max(0, Math.min(1, offsetX / width));
+
+        handleVolumeChange(ratio);
+    }
+
     useEffect(() => {
-        if (dragging) {
-            document.addEventListener('mousemove', handleMouseMove);
+        if (draggingElement) {
             document.addEventListener('touchmove', handleTouchMove, { passive: false });
+            document.addEventListener('mousemove', handleMouseMove);
             document.addEventListener('mouseup', handlePlayheadClickTouchEnd);
             document.addEventListener('touchend', handlePlayheadClickTouchEnd);
         }
 
         progressWrapRef.current?.addEventListener('touchstart', handleProgressWrapTouchStart, { passive: false });
+        volumeWrapRef.current?.addEventListener('touchstart', handleVolumeWrapTouchStart, { passive: false });
 
         if (!isMobile || !isTablet) {
             progressWrapRef.current?.addEventListener('mousedown', handleProgressWrapMouseDown);
+            volumeWrapRef.current?.addEventListener('mousedown', handleVolumeWrapMouseDown);
         }
 
         return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('touchmove', handleTouchMove);
-            document.removeEventListener('mouseup', handlePlayheadClickTouchEnd);
-            document.removeEventListener('touchend', handlePlayheadClickTouchEnd);
+            if (draggingElement) {
+                document.removeEventListener('touchmove', handleTouchMove);
+                document.removeEventListener('mousemove', handleMouseMove);
+                document.removeEventListener('mouseup', handlePlayheadClickTouchEnd);
+                document.removeEventListener('touchend', handlePlayheadClickTouchEnd);
+            }
+
             progressWrapRef.current?.removeEventListener('touchstart', handleProgressWrapTouchStart);
             progressWrapRef.current?.removeEventListener('mousedown', handleProgressWrapMouseDown);
+            volumeWrapRef.current?.removeEventListener('touchstart', handleVolumeWrapTouchStart);
+            volumeWrapRef.current?.removeEventListener('mousedown', handleVolumeWrapMouseDown);
         };
 
-    }, [dragging, isPlaying, isMobile, isTablet]);
+    }, [draggingElement, isMobile, isTablet]);
 
-    return { dragging };
+    return { dragging: !!draggingElement };
 };
 
 export default usePlayerControlsEventListeners;

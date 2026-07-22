@@ -20,7 +20,7 @@ export enum TrackSkipPayload {
 
 export type AudioTime = OrUndefined<number>;
 
-export type AudioVolumne = OrUndefined<number>;
+export type AudioVolume = OrUndefined<number>;
 
 export interface GlobalPlayerContextValue {
     audioDuration: AudioTime;
@@ -38,7 +38,7 @@ export interface GlobalPlayerContextValue {
     isShuffle: boolean;
     loop: ILoop;
     shufflePlaylist: () => void;
-    volume: AudioVolumne;
+    volume: AudioVolume;
 }
 
 export interface GlobalPlayerProviderProps {
@@ -71,4 +71,9 @@ export enum ILoop {
 export enum GlobalStylesPayload {
     Enable = 'enable',
     Disable = 'disable',
+}
+
+export enum DraggingElement {
+    Progress = 'progress',
+    Volume = 'volume',
 }
