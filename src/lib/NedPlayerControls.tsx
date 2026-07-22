@@ -14,6 +14,7 @@ const NedPlayerControls: FC = () => {
         handlePlayPause,
         handleSkip,
         handleStop,
+        handleVolumeToggle,
         isPlaying,
         isShuffle,
         loop,
@@ -114,6 +115,7 @@ const NedPlayerControls: FC = () => {
                     />
                     <div className='ned-player__volume-track' />
                 </div>
+                <button onClick={handleVolumeToggle}>toggle volume</button>
             </div>
 
 

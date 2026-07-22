@@ -85,6 +85,14 @@ const useAudioEngine = (
         setVolume(newVolume);
     }
 
+    function handleVolumeToggle(): void {
+        if (volume === 0) {
+            handleVolumeChange(1);
+        } else {
+            handleVolumeChange(0);
+        }
+    }
+
     // Play the track when currentIndex changes and playlist was played back
     useEffect(() => {
         if (isPlaying) {
@@ -139,6 +147,9 @@ const useAudioEngine = (
                     e.preventDefault();
                     handlePlayPause(isPlaying ? PlayPausePayload.Pause : PlayPausePayload.Play);
                     break;
+                case 'KeyM':
+                    handleVolumeToggle()
+                    break;
             }
         }
 
@@ -147,7 +158,7 @@ const useAudioEngine = (
         return () => {
             document.removeEventListener('keydown', handleKeyboardClick);
         }
-    }, [isPlaying]);
+    }, [isPlaying, volume]);
 
     return {
         audioDuration,
@@ -155,6 +166,7 @@ const useAudioEngine = (
         handleCurrentTimeChange,
         handlePlayPause,
         handleVolumeChange,
+        handleVolumeToggle,
         isPlaying,
         loopTrack,
         volume,

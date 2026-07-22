@@ -34,6 +34,7 @@ export interface GlobalPlayerContextValue {
     handleSkip: (payload: TrackSkipPayload) => void;
     handleStop: (resetTime?: boolean) => void;
     handleVolumeChange: (newVolume: number) => void;
+    handleVolumeToggle: () => void;
     isPlaying: boolean;
     isShuffle: boolean;
     loop: ILoop;
