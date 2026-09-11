@@ -22,7 +22,7 @@ export type AudioTime = OrUndefined<number>;
 
 export type AudioVolume = OrUndefined<number>;
 
-export interface GlobalPlayerContextValue {
+export interface NedPlayerContextValue {
     audioDuration: AudioTime;
     audioTime: AudioTime;
     currentTrack: CurrentTrack;
@@ -42,7 +42,7 @@ export interface GlobalPlayerContextValue {
     volume: AudioVolume;
 }
 
-export interface GlobalPlayerProviderProps {
+export interface NedPlayerProviderProps {
     children: ReactNode;
     playlist: Playlist;
 }

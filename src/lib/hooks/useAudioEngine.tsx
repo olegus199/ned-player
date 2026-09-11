@@ -148,7 +148,7 @@ const useAudioEngine = (
                     handlePlayPause(isPlaying ? PlayPausePayload.Pause : PlayPausePayload.Play);
                     break;
                 case 'KeyM':
-                    handleVolumeToggle()
+                    handleVolumeToggle();
                     break;
             }
         }

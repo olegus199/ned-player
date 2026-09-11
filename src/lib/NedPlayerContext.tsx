@@ -10,8 +10,8 @@ import AudioElement from './AudioElement.tsx';
 import {
     TrackSkipPayload,
     OrUndefined,
-    GlobalPlayerContextValue,
-    GlobalPlayerProviderProps,
+    NedPlayerContextValue,
+    NedPlayerProviderProps,
     CurrentTrack,
     ILoop,
     PlayPausePayload,
@@ -19,9 +19,9 @@ import {
 import { formatAudioTime, normalizePlaylist, shuffleArr } from './utils.ts';
 import useAudioEngine from './hooks/useAudioEngine.tsx';
 
-const GlobalPlayerContext = createContext<OrUndefined<GlobalPlayerContextValue>>(undefined);
+const NedPlayerContext = createContext<OrUndefined<NedPlayerContextValue>>(undefined);
 
-export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
+export const NedPlayerProvider: FC<NedPlayerProviderProps> = ({
     children,
     playlist,
 }) => {
@@ -134,7 +134,7 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
     }
 
     return (
-        <GlobalPlayerContext.Provider
+        <NedPlayerContext.Provider
             value={{
                 audioDuration,
                 audioTime,
@@ -157,12 +157,12 @@ export const GlobalPlayerProvider: FC<GlobalPlayerProviderProps> = ({
         >
             <AudioElement ref={audioRef} />
             {children}
-        </GlobalPlayerContext.Provider>
+        </NedPlayerContext.Provider>
     );
 };
 
-export const useGlobalPlayerContext = (): GlobalPlayerContextValue => {
-    const context = useContext(GlobalPlayerContext);
+export const useGlobalPlayerContext = (): NedPlayerContextValue => {
+    const context = useContext(NedPlayerContext);
     if (!context) {
         throw new Error(
             'usePlayerContext must be used within a GlobalPlayerProvider',

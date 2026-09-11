@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { GlobalPlayerProvider } from './lib/NedPlayerContext';
+import { NedPlayerProvider } from './lib/NedPlayerContext';
 import Playground from './Playground';
 import song1 from './assets/song1.flac';
 import song2 from './assets/song2.flac';
@@ -40,10 +40,10 @@ const App: FC = () => {
     ]
 
     return (
-        <GlobalPlayerProvider playlist={localPlaylist}>
+        <NedPlayerProvider playlist={localPlaylist}>
             <h1>NED player</h1>
             <Playground />
-        </GlobalPlayerProvider>
+        </NedPlayerProvider>
     );
 };
 
