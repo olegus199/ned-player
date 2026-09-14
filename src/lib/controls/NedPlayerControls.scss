@@ -1,0 +1,54 @@
+@use 'variables' as *;
+
+@use 'cover';
+@use 'track-info';
+@use 'progress-bar';
+@use 'time';
+@use 'control-buttons';
+@use 'control-button';
+@use 'volume';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.ned-player {
+  max-width: 64.25rem;
+  margin: 0 auto;
+  border-radius: 1.25rem;
+  background-color: $main_white;
+  box-shadow: 0 .125rem 1rem rgba($color: $main_dark, $alpha: .06);
+}
+
+.ned-player__content {
+  display: flex;
+  justify-content: space-between;
+  gap: 3rem;
+  min-height: 34rem;
+  padding: 4.5rem 5.25rem;
+}
+
+.ned-player__right {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 22.75rem;
+  padding: 2rem 0;
+}
+
+.ned-player__main-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1.875rem;
+}
+
+.ned-player__timeline {
+  display: flex;
+  flex-direction: column;
+  gap: .625rem;
+}

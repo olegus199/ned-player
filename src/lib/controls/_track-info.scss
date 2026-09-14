@@ -1,0 +1,17 @@
+@use 'variables' as *;
+
+.ned-player__track-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .75rem;
+}
+
+.ned-player__track-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.ned-player__track-artist {
+  color: $neutral_900;
+}

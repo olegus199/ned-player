@@ -1,0 +1,33 @@
+@use 'variables' as *;
+
+.ned-player__control-button {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0;
+  outline: none;
+  background-color: transparent;
+  cursor: pointer;
+
+  &--active {
+
+    .ned-player__icon--lg,
+    .ned-player__icon--md,
+    .ned-player__icon--sm {
+      @include svg-icon-color($main_accent);
+    }
+  }
+}
+
+.ned-player__icon--lg {
+  @include svg-icon(2.5rem, 2.5rem);
+}
+
+.ned-player__icon--md {
+  @include svg-icon(1.25rem, 1.25rem);
+}
+
+.ned-player__icon--sm {
+  @include svg-icon(1rem, 1rem);
+}

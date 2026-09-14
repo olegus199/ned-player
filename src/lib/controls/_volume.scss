@@ -1,0 +1,23 @@
+@use 'variables' as *;
+
+.ned-player__volume {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+}
+
+.ned-player__volume-bar {
+  @include slider-bar();
+
+  width: 100%;
+  max-width: 5rem;
+}
+
+.ned-player__volume-thumb {
+  @include slider-thumb();
+}
+
+.ned-player__volume-fill {
+  @include slider-fill();
+}

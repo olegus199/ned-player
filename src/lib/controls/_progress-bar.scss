@@ -1,0 +1,13 @@
+@use 'variables' as *;
+
+.ned-player__progress-bar {
+  @include slider-bar();
+}
+
+.ned-player__progress-thumb {
+  @include slider-thumb($main_accent);
+}
+
+.ned-player__progress-fill {
+  @include slider-fill($main_accent);
+}

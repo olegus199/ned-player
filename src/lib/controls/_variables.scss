@@ -1,0 +1,48 @@
+$main_dark: #000;
+$main_white: #fff;
+$main_accent: #ff0a37;
+$neutral_900: #8b8b8b;
+$neutral_800: #c5c5c5;
+$neutral_700: #ececec;
+
+@mixin slider-bar {
+  position: relative;
+  height: .25rem;
+  background-color: $neutral_700;
+  cursor: pointer;
+}
+
+@mixin slider-thumb($bg-color: $main_dark) {
+  position: absolute;
+  top: 50%;
+  left: -0.375rem;
+  transform: translateY(-50%);
+  width: 0.75rem;
+  height: 0.75rem;
+
+  border-radius: 50%;
+  background-color: $bg-color;
+  transition: transform ease-out;
+}
+
+@mixin slider-fill($bg-color: $main_dark) {
+  width: 0;
+  height: 100%;
+  background-color: $bg-color;
+}
+
+@mixin svg-icon($width: 1rem, $height: 1rem, $color: $main_dark) {
+  display: block;
+  width: $width;
+  height: $height;
+
+  path {
+    fill: $color;
+  }
+}
+
+@mixin svg-icon-color($color) {
+  path {
+    fill: $color;
+  }
+}

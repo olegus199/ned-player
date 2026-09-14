@@ -1,9 +1,9 @@
 import { FC } from 'react';
 import { AudioElementProps } from './types';
-import { useGlobalPlayerContext } from './NedPlayerContext';
+import { useNedPlayerContext } from './NedPlayerContext';
 
 const AudioElement: FC<AudioElementProps> = ({ ref }) => {
-    const { currentTrack } = useGlobalPlayerContext();
+    const { currentTrack } = useNedPlayerContext();
 
     return (
         <audio

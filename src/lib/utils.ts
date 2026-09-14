@@ -1,6 +1,7 @@
 import { nanoid } from 'nanoid';
 import {
     AudioTime,
+    ClassComposeItem,
     CurrentTrack,
     GlobalStylesPayload,
     IDTrack,
@@ -67,4 +68,29 @@ export function setGlobalStyles(payload: GlobalStylesPayload): void {
             document.body.style.webkitUserSelect = 'auto';
             break;
     }
+}
+
+export function cssClassNames(
+    baseClass: string,
+    item: ClassComposeItem,
+    additionalClasses?: string
+): string {
+    const classes: string[] = [];
+
+    if (baseClass?.trim()) {
+        classes.push(baseClass.trim());
+    }
+
+    Object.entries(item).forEach(([className, predicate]) => {
+        if (predicate && className?.trim()) {
+            classes.push(className.trim());
+        }
+    });
+
+    if (additionalClasses?.trim()) {
+        const extra = additionalClasses.split(/\s+/).filter(Boolean);
+        classes.push(...extra);
+    }
+
+    return classes.join(' ');
 }

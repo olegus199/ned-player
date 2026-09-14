@@ -161,11 +161,11 @@ export const NedPlayerProvider: FC<NedPlayerProviderProps> = ({
     );
 };
 
-export const useGlobalPlayerContext = (): NedPlayerContextValue => {
+export const useNedPlayerContext = (): NedPlayerContextValue => {
     const context = useContext(NedPlayerContext);
     if (!context) {
         throw new Error(
-            'usePlayerContext must be used within a GlobalPlayerProvider',
+            'useNedPlayerContext must be used within a GlobalPlayerProvider',
         );
     }
     return context;

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { FC, ReactNode, SVGProps } from 'react';
 
 export type OrUndefined<T> = T | undefined;
 
@@ -74,7 +74,22 @@ export enum GlobalStylesPayload {
     Disable = 'disable',
 }
 
-export enum DraggingElement {
-    Progress = 'progress',
-    Volume = 'volume',
+export interface ClassComposeItem {
+    [key: string]: OrNull<boolean | undefined>;
+}
+
+export type ComposedDragEvent = TouchEvent | MouseEvent;
+
+export interface ControlButtonProps {
+    className?: string;
+    icon: FC<SVGProps<SVGSVGElement>>;
+    iconSize?: IconSize;
+    isActive?: boolean;
+    onClick?: () => void;
+}
+
+export enum IconSize {
+    SM = 'sm',
+    MD = 'md',
+    LG = 'lg',
 }
