@@ -9,7 +9,7 @@ $neutral_700: #ececec;
   position: relative;
   height: .25rem;
   background-color: $neutral_700;
-  cursor: pointer;
+  touch-action: none;
 }
 
 @mixin slider-thumb($bg-color: $main_dark) {
@@ -23,6 +23,7 @@ $neutral_700: #ececec;
   border-radius: 50%;
   background-color: $bg-color;
   transition: transform ease-out;
+  cursor: grab;
 }
 
 @mixin slider-fill($bg-color: $main_dark) {

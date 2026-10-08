@@ -1,92 +1,80 @@
-import { RefObject, useEffect, useState } from 'react';
-import { isMobile, isTablet } from 'react-device-detect';
+import { RefObject, useEffect, useRef, useState } from 'react';
 import { setGlobalStyles } from '../utils';
-import { ComposedDragEvent, GlobalStylesPayload, OrNull } from '../types';
+import { DragRatio, GlobalStylesPayload, OrNull } from '../types';
 import { useNedPlayerContext } from '../NedPlayerContext';
 
 const useSliderDrag = (
     wrapRef: RefObject<OrNull<HTMLDivElement>>,
-    onChange: (newTime: number) => void,
+    onCommit: (ratio: number) => void,
 ) => {
     const { currentTrack } = useNedPlayerContext();
+    const [dragRatio, setDragRatio] = useState<DragRatio>(null);
+    const ratioRef = useRef<DragRatio>(null);
 
-    const [dragging, setDragging] = useState(false);
+    // Always call the latest onCommit without re-binding listeners
+    const onCommitRef = useRef(onCommit);
+    onCommitRef.current = onCommit;
 
-    // Prevent continious dragging when track changes (when user drags to the end of a track)
+    const setRatio = (ratio: DragRatio) => {
+        ratioRef.current = ratio;
+        setDragRatio(ratio);
+    };
+
+    // If the track changes mid-drag, cancel instead of seeking the new track
     useEffect(() => {
-        handleEnd();
+        if (ratioRef.current !== null) {
+            setGlobalStyles(GlobalStylesPayload.Enable);
+            setRatio(null);
+        }
     }, [currentTrack?.id]);
 
     useEffect(() => {
-        if (dragging) {
-            document.addEventListener('touchmove', handleMove, { passive: false });
-            document.addEventListener('mousemove', handleMove);
-            document.addEventListener('mouseup', handleEnd);
-            document.addEventListener('touchend', handleEnd);
-        }
+        const el = wrapRef.current;
+        if (!el) return;
 
-        if (!isMobile && !isTablet) {
-            wrapRef.current?.addEventListener('mousedown', handleStart);
-        } else {
-            wrapRef.current?.addEventListener('touchstart', handleStart, { passive: false });
-        }
-
-        return () => {
-            if (dragging) {
-                document.removeEventListener('touchmove', handleMove);
-                document.removeEventListener('mousemove', handleMove);
-                document.removeEventListener('mouseup', handleEnd);
-                document.removeEventListener('touchend', handleEnd);
-            }
-
-            wrapRef.current?.removeEventListener('touchstart', handleStart);
-            wrapRef.current?.removeEventListener('mousedown', handleStart);
+        const calc = (clientX: number) => {
+            const { left, width } = el.getBoundingClientRect();
+            return Math.max(0, Math.min(1, (clientX - left) / width));
         };
 
-    }, [dragging, isMobile, isTablet]);
+        const onDown = (e: PointerEvent) => {
+            e.preventDefault();
+            el.setPointerCapture(e.pointerId);
+            setGlobalStyles(GlobalStylesPayload.Disable);
+            setRatio(calc(e.clientX));
+        };
 
-    function handleStart(e: ComposedDragEvent): void {
-        e.preventDefault();
+        const onMove = (e: PointerEvent) => {
+            if (ratioRef.current === null) return;
+            setRatio(calc(e.clientX));
+        };
 
-        setGlobalStyles(GlobalStylesPayload.Disable);
-        setDragging(true);
+        const onUp = () => {
+            if (ratioRef.current === null) return;
+            onCommitRef.current(ratioRef.current);
+            setGlobalStyles(GlobalStylesPayload.Enable);
+            setRatio(null);
+        };
 
-        onChange(calcRatio(e));
-    }
+        const onCancel = () => {
+            setGlobalStyles(GlobalStylesPayload.Enable);
+            setRatio(null);
+        };
 
-    function handleEnd(): void {
-        setGlobalStyles(GlobalStylesPayload.Enable);
-        setDragging(false);
-    }
+        el.addEventListener('pointerdown', onDown);
+        el.addEventListener('pointermove', onMove);
+        el.addEventListener('pointerup', onUp);
+        el.addEventListener('pointercancel', onCancel);
 
-    function handleMove(e: ComposedDragEvent): void {
-        e.preventDefault();
+        return () => {
+            el.removeEventListener('pointerdown', onDown);
+            el.removeEventListener('pointermove', onMove);
+            el.removeEventListener('pointerup', onUp);
+            el.removeEventListener('pointercancel', onCancel);
+        };
+    }, []);
 
-        onChange(calcRatio(e));
-    }
-
-    function calcRatio(e: ComposedDragEvent): number {
-        const container = wrapRef.current;
-
-        if (!container) {
-            return 0;
-        }
-
-        let clientX = 0;
-
-        if ('touches' in e) {
-            clientX = e.touches[0].clientX;
-        } else if ('clientX' in e) {
-            clientX = e.clientX;
-        }
-
-        const { left, width } = container.getBoundingClientRect();
-        const offsetX = clientX - left;
-
-        return Math.max(0, Math.min(1, offsetX / width));
-    }
-
-    return { dragging };
+    return { dragRatio, dragging: dragRatio !== null };
 };
 
 export default useSliderDrag;

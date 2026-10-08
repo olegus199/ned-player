@@ -22,15 +22,17 @@ export type AudioTime = OrUndefined<number>;
 
 export type AudioVolume = OrUndefined<number>;
 
+export type DragRatio = OrNull<number>;
+
 export interface NedPlayerContextValue {
     audioDuration: AudioTime;
     audioTime: AudioTime;
     currentTrack: CurrentTrack;
     formattedDuration: string;
     formattedTime: string;
-    handleCurrentTimeChange: (newTime: number) => void;
     handleLoopChange: () => void;
     handlePlayPause: (payload: PlayPausePayload) => void;
+    handleSeek: (ratio: number) => void;
     handleSkip: (payload: TrackSkipPayload) => void;
     handleStop: (resetTime?: boolean) => void;
     handleVolumeChange: (newVolume: number) => void;
@@ -117,3 +119,5 @@ export interface TimeProps extends BasePlayerControlsProps {
 }
 
 export interface VolumeProps extends BasePlayerControlsProps { }
+
+export interface ControlButtonsProps extends BasePlayerControlsProps { }

@@ -1,11 +1,12 @@
 import { RefObject, useEffect } from 'react';
 import { useNedPlayerContext } from '../NedPlayerContext';
-import { OrNull } from '../types';
+import { DragRatio, OrNull } from '../types';
 
 const useProgressBarResizeObserver = (
     progressWrapRef: RefObject<OrNull<HTMLDivElement>>,
     progressFillRef: RefObject<OrNull<HTMLDivElement>>,
     progressThumbRef: RefObject<OrNull<HTMLDivElement>>,
+    dragRatio: DragRatio,
 ) => {
     const {
         audioDuration,
@@ -19,23 +20,23 @@ const useProgressBarResizeObserver = (
             const fill = progressFillRef.current;
             const thumb = progressThumbRef.current;
 
-            if (!progressWrap
-                || !fill
-                || !thumb
-                || audioTime === undefined
-                || !audioDuration
-            ) {
+            if (!progressWrap || !fill || !thumb) {
                 return;
             }
 
-            const containerWidth = progressWrap.getBoundingClientRect().width;
-            const passedPersantage = Math.min(
-                Math.max(0, (audioTime / audioDuration) * 100),
-                100,
-            );
-            const updatedTranslate = (containerWidth * passedPersantage) / 100;
+            // Drag position takes priority; otherwise use the real playback time
+            const ratio = dragRatio
+                ?? (audioTime !== undefined && audioDuration ? audioTime / audioDuration : null);
 
-            fill.style.width = `${passedPersantage}%`;
+            if (ratio === null) {
+                return;
+            }
+
+            const passedPercentage = Math.min(Math.max(0, ratio * 100), 100);
+            const containerWidth = progressWrap.getBoundingClientRect().width;
+            const updatedTranslate = (containerWidth * passedPercentage) / 100;
+
+            fill.style.width = `${passedPercentage}%`;
             thumb.style.transform = `translateY(-50%) translateX(${updatedTranslate}px)`;
         });
 
@@ -46,7 +47,7 @@ const useProgressBarResizeObserver = (
         return () => {
             observer.disconnect();
         };
-    }, [audioTime, currentTrack, audioDuration]);
+    }, [audioTime, currentTrack, audioDuration, dragRatio]);
 };
 
 export default useProgressBarResizeObserver;

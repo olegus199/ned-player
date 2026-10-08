@@ -8,10 +8,11 @@ import iconLoopTrack from '@/assets/icons/loop-track.svg?react';
 import iconSkipLeft from '@/assets/icons/skip-left.svg?react';
 import iconSkipRight from '@/assets/icons/skip-right.svg?react';
 import { useNedPlayerContext } from '../../NedPlayerContext';
-import { IconSize, ILoop, PlayPausePayload, TrackSkipPayload } from '../../types';
+import { ControlButtonsProps, IconSize, ILoop, PlayPausePayload, TrackSkipPayload } from '../../types';
 import ControlButton from './ControlButton';
+import { cssClassNames } from '@/lib/utils';
 
-const ControlButtons: FC = () => {
+const ControlButtons: FC<ControlButtonsProps> = ({ className }) => {
     const {
         handleLoopChange,
         handlePlayPause,
@@ -37,7 +38,7 @@ const ControlButtons: FC = () => {
     }
 
     return (
-        <div className='ned-player__control-buttons'>
+        <div className={cssClassNames('ned-player__control-buttons', {}, className)}>
             <ControlButton
                 icon={iconShuffle}
                 isActive={isShuffle}

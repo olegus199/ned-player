@@ -30,13 +30,21 @@ const useAudioEngine = (
     }
 
     function handlePlay(): void {
-        if (normalizedPlaylistLength === 0) {
+        const audio = audioRef.current;
+
+        if (!audio || normalizedPlaylistLength === 0) {
             return;
         }
 
-        audioRef.current?.play().then(() => {
-            setIsPlaying(true);
-        });
+        audio.play()
+            .then(() => setIsPlaying(true))
+            .catch((err: DOMException) => {
+                // AbortError = interrupted by a new src load, harmless
+                if (err.name !== 'AbortError') {
+                    console.error(err);
+                }
+                setIsPlaying(false);
+            });
     }
 
     function handlePause(resetTime = false): void {
@@ -93,6 +101,23 @@ const useAudioEngine = (
         }
     }
 
+    function handleTrackEnd(): void {
+        if (loop === ILoop.Track) {
+            loopTrack();
+        } else {
+            handleChangeTrack(TrackSkipPayload.Next);
+        }
+    }
+
+    function handleSeek(ratio: number): void {
+        if (ratio >= 1) {
+            handleTrackEnd();
+            return;
+        }
+
+        handleCurrentTimeChange(ratio);
+    }
+
     // Play the track when currentIndex changes and playlist was played back
     useEffect(() => {
         if (isPlaying) {
@@ -119,11 +144,7 @@ const useAudioEngine = (
         }
 
         function handleEnd(): void {
-            if (loop === ILoop.Track) {
-                loopTrack();
-            } else {
-                handleChangeTrack(TrackSkipPayload.Next);
-            }
+            handleTrackEnd();
         }
 
         audio?.addEventListener('timeupdate', handleTimeUpdate);
@@ -163,8 +184,8 @@ const useAudioEngine = (
     return {
         audioDuration,
         audioTime,
-        handleCurrentTimeChange,
         handlePlayPause,
+        handleSeek,
         handleVolumeChange,
         handleVolumeToggle,
         isPlaying,

@@ -1,5 +1,4 @@
-import { FC, useRef } from 'react';
-import useVolumeResizeObserver from '../../hooks/useVolumeResizeObserver';
+import { FC, useEffect, useRef } from 'react';
 import useSliderDrag from '../../hooks/useSliderDrag';
 import { useNedPlayerContext } from '../../NedPlayerContext';
 import iconVolume from '@/assets/icons/volume.svg?react';
@@ -16,12 +15,16 @@ const Volume: FC<VolumeProps> = ({ className }) => {
     } = useNedPlayerContext();
 
     const volumeWrapRef = useRef<HTMLDivElement>(null);
-    const volumeFillRef = useRef<HTMLDivElement>(null);
-    const volumeThumbRef = useRef<HTMLDivElement>(null);
+    const { dragging, dragRatio } = useSliderDrag(volumeWrapRef, handleVolumeChange);
 
-    const { dragging } = useSliderDrag(volumeWrapRef, handleVolumeChange);
-    useVolumeResizeObserver(volumeWrapRef, volumeFillRef, volumeThumbRef);
+    // Live volume updates while dragging
+    useEffect(() => {
+        if (dragRatio !== null) {
+            handleVolumeChange(dragRatio);
+        }
+    }, [dragRatio]);
 
+    const percent = Math.min(Math.max(0, (volume ?? 0) * 100), 100);
     const currentVolumeIcon = volume === 0 ? iconVolumeOff : iconVolume;
 
     return (
@@ -30,17 +33,20 @@ const Volume: FC<VolumeProps> = ({ className }) => {
             <div
                 className='ned-player__volume-bar'
                 ref={volumeWrapRef}
+                style={{
+                    cursor: dragging ? 'grabbing' : 'pointer',
+                }}
             >
                 <div
                     className='ned-player__volume-thumb'
-                    ref={volumeThumbRef}
                     style={{
+                        left: `${percent}%`,
                         cursor: dragging ? 'grabbing' : 'grab',
                     }}
                 />
                 <div
                     className='ned-player__volume-fill'
-                    ref={volumeFillRef}
+                    style={{ width: `${percent}%` }}
                 />
                 <div className='ned-player__volume-track' />
             </div>

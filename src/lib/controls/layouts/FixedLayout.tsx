@@ -16,7 +16,7 @@ const FixedLayout: FC = () => {
                     <TrackInfo className='ned-player-fixed__track-info' />
                 </div>
                 <Time>
-                    <ControlButtons />
+                    <ControlButtons className='ned-player-fixed__control-buttons' />
                 </Time>
                 <Volume className='ned-player-fixed__volume' />
             </div>
