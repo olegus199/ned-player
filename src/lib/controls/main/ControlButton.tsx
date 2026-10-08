@@ -1,6 +1,6 @@
 import { FC } from 'react';
-import { cssClassNames } from '../utils';
-import { ControlButtonProps, IconSize } from '../types';
+import { cssClassNames } from '../../utils';
+import { ControlButtonProps, IconSize } from '../../types';
 
 const ControlButton: FC<ControlButtonProps> = ({
     className,

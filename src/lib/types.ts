@@ -80,6 +80,10 @@ export interface ClassComposeItem {
 
 export type ComposedDragEvent = TouchEvent | MouseEvent;
 
+export interface BasePlayerControlsProps {
+    className?: string;
+}
+
 export interface ControlButtonProps {
     className?: string;
     icon: FC<SVGProps<SVGSVGElement>>;
@@ -93,3 +97,23 @@ export enum IconSize {
     MD = 'md',
     LG = 'lg',
 }
+
+export enum LayoutType {
+    Default = 'default',
+    Fixed = 'fixed',
+}
+
+export interface NedPlayerControlsProps {
+    children?: ReactNode;
+    layoutType?: LayoutType;
+}
+
+export interface TrackInfoProps extends BasePlayerControlsProps { }
+
+export interface CoverProps extends BasePlayerControlsProps { }
+
+export interface TimeProps extends BasePlayerControlsProps {
+    children?: ReactNode;
+}
+
+export interface VolumeProps extends BasePlayerControlsProps { }

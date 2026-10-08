@@ -1,4 +1,4 @@
-@use 'variables' as *;
+@use '../variables' as *;
 
 .ned-player__time {
   display: flex;
@@ -6,4 +6,8 @@
   align-items: center;
   font-size: .75rem;
   color: $neutral_900;
+}
+
+.ned-player__time-children {
+  margin: 0 1rem;
 }

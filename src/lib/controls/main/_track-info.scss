@@ -1,10 +1,23 @@
-@use 'variables' as *;
+@use '../variables' as *;
 
 .ned-player__track-info {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: .75rem;
+}
+
+.ned-player-fixed__track-info {
+  align-items: start;
+  gap: .25rem;
+
+  .ned-player__track-title {
+    font-size: 1rem;
+  }
+
+  .ned-player__track-artist {
+    font-size: .75rem;
+  }
 }
 
 .ned-player__track-title {

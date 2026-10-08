@@ -1,13 +1,14 @@
 import { FC, useRef } from 'react';
-import useVolumeResizeObserver from '../hooks/useVolumeResizeObserver';
-import useSliderDrag from '../hooks/useSliderDrag';
-import { useNedPlayerContext } from '../NedPlayerContext';
+import useVolumeResizeObserver from '../../hooks/useVolumeResizeObserver';
+import useSliderDrag from '../../hooks/useSliderDrag';
+import { useNedPlayerContext } from '../../NedPlayerContext';
 import iconVolume from '@/assets/icons/volume.svg?react';
 import iconVolumeOff from '@/assets/icons/volume-off.svg?react';
 import ControlButton from './ControlButton';
-import { IconSize } from '../types';
+import { IconSize, VolumeProps } from '../../types';
+import { cssClassNames } from '@/lib/utils';
 
-const Volume: FC = () => {
+const Volume: FC<VolumeProps> = ({ className }) => {
     const {
         handleVolumeChange,
         handleVolumeToggle,
@@ -24,7 +25,7 @@ const Volume: FC = () => {
     const currentVolumeIcon = volume === 0 ? iconVolumeOff : iconVolume;
 
     return (
-        <div className='ned-player__volume'>
+        <div className={cssClassNames('ned-player__volume', {}, className)}>
             <ControlButton icon={currentVolumeIcon} iconSize={IconSize.MD} onClick={handleVolumeToggle} />
             <div
                 className='ned-player__volume-bar'

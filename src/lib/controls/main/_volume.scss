@@ -1,10 +1,14 @@
-@use 'variables' as *;
+@use '../variables' as *;
 
 .ned-player__volume {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: .5rem;
+}
+
+.ned-player-fixed__volume {
+  justify-content: end;
 }
 
 .ned-player__volume-bar {

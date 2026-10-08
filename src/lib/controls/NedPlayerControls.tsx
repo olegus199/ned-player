@@ -1,38 +1,32 @@
-import { FC, PropsWithChildren } from 'react';
+import { FC } from 'react';
 import './NedPlayerControls.scss';
-import Cover from './Cover';
-import TrackInfo from './TrackInfo';
-import ProgressBar from './ProgressBar';
-import Time from './Time';
-import ControlButtons from './ControlButtons';
-import Volume from './Volume';
-import ControlButton from './ControlButton';
+import Cover from './main/Cover';
+import TrackInfo from './main/TrackInfo';
+import ProgressBar from './main/ProgressBar';
+import Time from './main/Time';
+import ControlButtons from './main/ControlButtons';
+import Volume from './main/Volume';
+import ControlButton from './main/ControlButton';
+import DefaultLayout from './layouts/DefaultLayout';
+import FixedLayout from './layouts/FixedLayout';
+import { LayoutType, NedPlayerControlsProps } from '../types';
 
-const NedPlayerControlsRoot: FC<PropsWithChildren> = ({ children }) => {
+const layouts: Record<LayoutType, FC> = {
+    default: DefaultLayout,
+    fixed: FixedLayout,
+};
+
+const NedPlayerControlsRoot: FC<NedPlayerControlsProps> = ({
+    children,
+    layoutType = LayoutType.Default,
+}) => {
+    const LayoutComponent = layouts[layoutType];
+
     return (
-        <div className='ned-player'>
-            {children ?? (
-                <div className='ned-player__content'>
-                    <Cover />
-
-                    <div className='ned-player__right'>
-                        <TrackInfo />
-                        <div className='ned-player__main-controls'>
-                            <div>
-                                <div className='ned-player__timeline'>
-                                    <ProgressBar />
-                                    <Time />
-                                </div>
-                            </div>
-                            <ControlButtons />
-                        </div>
-
-                        <Volume />
-                    </div>
-                </div>
-            )}
+        <div className={`ned-player${layoutType === LayoutType.Fixed ? ' ned-player--fixed' : ''}`}>
+            {children ?? <LayoutComponent />}
         </div>
-    )
+    );
 };
 
 const NedPlayerControls = Object.assign(NedPlayerControlsRoot, {
@@ -43,6 +37,8 @@ const NedPlayerControls = Object.assign(NedPlayerControlsRoot, {
     ControlButtons,
     ControlButton,
     Volume,
+    DefaultLayout,
+    FixedLayout,
 });
 
 export default NedPlayerControls;

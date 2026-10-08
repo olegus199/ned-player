@@ -7,8 +7,8 @@ import iconLoopPlaylist from '@/assets/icons/loop-playlist.svg?react';
 import iconLoopTrack from '@/assets/icons/loop-track.svg?react';
 import iconSkipLeft from '@/assets/icons/skip-left.svg?react';
 import iconSkipRight from '@/assets/icons/skip-right.svg?react';
-import { useNedPlayerContext } from '../NedPlayerContext';
-import { IconSize, ILoop, PlayPausePayload, TrackSkipPayload } from '../types';
+import { useNedPlayerContext } from '../../NedPlayerContext';
+import { IconSize, ILoop, PlayPausePayload, TrackSkipPayload } from '../../types';
 import ControlButton from './ControlButton';
 
 const ControlButtons: FC = () => {

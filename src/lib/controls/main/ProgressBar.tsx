@@ -1,7 +1,7 @@
 import { FC, useRef } from 'react';
-import useSliderDrag from '../hooks/useSliderDrag';
-import { useNedPlayerContext } from '../NedPlayerContext';
-import useProgressBarResizeObserver from '../hooks/useProgressBarResizeObserver';
+import useSliderDrag from '../../hooks/useSliderDrag';
+import { useNedPlayerContext } from '../../NedPlayerContext';
+import useProgressBarResizeObserver from '../../hooks/useProgressBarResizeObserver';
 
 const ProgressBar: FC = () => {
     const { handleCurrentTimeChange } = useNedPlayerContext();
