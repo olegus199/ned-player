@@ -33,16 +33,11 @@ const Volume: FC<VolumeProps> = ({ className }) => {
             <div
                 className='ned-player__volume-bar'
                 ref={volumeWrapRef}
-                style={{
-                    cursor: dragging ? 'grabbing' : 'pointer',
-                }}
+                style={{ cursor: dragging ? 'grabbing' : 'pointer' }}
             >
                 <div
                     className='ned-player__volume-thumb'
-                    style={{
-                        left: `${percent}%`,
-                        cursor: dragging ? 'grabbing' : 'grab',
-                    }}
+                    style={{ left: `${percent}%` }}
                 />
                 <div
                     className='ned-player__volume-fill'

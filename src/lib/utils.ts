@@ -19,20 +19,18 @@ export function normalizeTrack(track: OrUndefined<ITrack | IDTrack | string>): C
         return null;
     }
 
-    const id = typeof track !== 'string' && 'id' in track ? track.id : nanoid();
-
     if (typeof track === 'string') {
-        return { audioSrc: track, id };
+        return { audioSrc: track, id: nanoid() };
     }
 
-    return { ...track, id };
+    return { ...track, id: 'id' in track ? track.id : nanoid() };
 }
 
 export function shuffleArr<T>(arr: T[]): T[] {
-    let result = [...arr];
+    const result = [...arr];
 
     for (let i = result.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
+        const j = Math.floor(Math.random() * (i + 1));
         [result[i], result[j]] = [result[j], result[i]];
     }
 
@@ -44,10 +42,9 @@ export function formatAudioTime(seconds: AudioTime): string {
         return '00:00';
     }
 
-    seconds = Math.floor(seconds);
-
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+    const total = Math.floor(seconds);
+    const minutes = Math.floor(total / 60);
+    const remainingSeconds = total % 60;
 
     const formattedMinutes = minutes.toString().padStart(2, '0');
     const formattedSeconds = remainingSeconds.toString().padStart(2, '0');

@@ -1,34 +1,33 @@
 import { FC, useRef } from 'react';
 import useSliderDrag from '../../hooks/useSliderDrag';
 import { useNedPlayerContext } from '../../NedPlayerContext';
-import useProgressBarResizeObserver from '../../hooks/useProgressBarResizeObserver';
+import { useNedPlayerTime } from '../../NedPlayerTimeContext';
 
 const ProgressBar: FC = () => {
     const { handleSeek } = useNedPlayerContext();
+    const { audioTime, audioDuration } = useNedPlayerTime();
 
     const progressWrapRef = useRef<HTMLDivElement>(null);
-    const progressFillRef = useRef<HTMLDivElement>(null);
-    const progressThumbRef = useRef<HTMLDivElement>(null);
-
     const { dragging, dragRatio } = useSliderDrag(progressWrapRef, handleSeek);
-    useProgressBarResizeObserver(progressWrapRef, progressFillRef, progressThumbRef, dragRatio);
+
+    // Drag position takes priority; otherwise use the real playback time
+    const ratio = dragRatio ?? (audioDuration ? audioTime / audioDuration : 0);
+    const percent = Math.min(Math.max(ratio * 100, 0), 100);
 
     return (
         <div
             ref={progressWrapRef}
             className='ned-player__progress-bar'
-            style={{
-                cursor: dragging ? 'grabbing' : 'pointer',
-            }}
+            style={{ cursor: dragging ? 'grabbing' : 'pointer' }}
         >
             <div
                 className='ned-player__progress-thumb'
                 onClick={(e) => e.stopPropagation()}
-                ref={progressThumbRef}
+                style={{ left: `${percent}%` }}
             />
             <div
-                ref={progressFillRef}
                 className='ned-player__progress-fill'
+                style={{ width: `${percent}%` }}
             />
             <div className='ned-player__progress-track' />
         </div>
@@ -36,4 +35,3 @@ const ProgressBar: FC = () => {
 };
 
 export default ProgressBar;
-

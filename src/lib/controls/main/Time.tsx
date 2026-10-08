@@ -1,11 +1,12 @@
 import { FC } from 'react';
-import { useNedPlayerContext } from '../../NedPlayerContext';
 import { TimeProps } from '@/lib/types';
+import { useNedPlayerTime } from '@/lib/NedPlayerTimeContext';
 
 const Time: FC<TimeProps> = ({
     children,
 }) => {
-    const { formattedDuration, formattedTime } = useNedPlayerContext();
+    const { formattedDuration, formattedTime } = useNedPlayerTime();
+
     return (
         <div className='ned-player__time'>
             <div>

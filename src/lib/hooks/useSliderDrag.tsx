@@ -2,6 +2,7 @@ import { RefObject, useEffect, useRef, useState } from 'react';
 import { setGlobalStyles } from '../utils';
 import { DragRatio, GlobalStylesPayload, OrNull } from '../types';
 import { useNedPlayerContext } from '../NedPlayerContext';
+import useLatest from './useLatest';
 
 const useSliderDrag = (
     wrapRef: RefObject<OrNull<HTMLDivElement>>,
@@ -12,8 +13,7 @@ const useSliderDrag = (
     const ratioRef = useRef<DragRatio>(null);
 
     // Always call the latest onCommit without re-binding listeners
-    const onCommitRef = useRef(onCommit);
-    onCommitRef.current = onCommit;
+    const onCommitRef = useLatest(onCommit);
 
     const setRatio = (ratio: DragRatio) => {
         ratioRef.current = ratio;
@@ -30,7 +30,10 @@ const useSliderDrag = (
 
     useEffect(() => {
         const el = wrapRef.current;
-        if (!el) return;
+
+        if (!el) {
+            return;
+        }
 
         const calc = (clientX: number) => {
             const { left, width } = el.getBoundingClientRect();
@@ -45,12 +48,18 @@ const useSliderDrag = (
         };
 
         const onMove = (e: PointerEvent) => {
-            if (ratioRef.current === null) return;
+            if (ratioRef.current === null) {
+                return;
+            }
+
             setRatio(calc(e.clientX));
         };
 
         const onUp = () => {
-            if (ratioRef.current === null) return;
+            if (ratioRef.current === null) {
+                return;
+            }
+
             onCommitRef.current(ratioRef.current);
             setGlobalStyles(GlobalStylesPayload.Enable);
             setRatio(null);

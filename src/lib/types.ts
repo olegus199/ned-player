@@ -1,12 +1,10 @@
-import { FC, ReactNode, SVGProps } from 'react';
+import { FC, ReactNode, RefObject, SVGProps } from 'react';
 
 export type OrUndefined<T> = T | undefined;
 
 export type OrNull<T> = T | null;
 
-export interface AudioElementProps {
-    ref: React.Ref<HTMLAudioElement>;
-}
+export type AudioRef = RefObject<OrNull<HTMLAudioElement>>;
 
 export enum PlayPausePayload {
     Play = 'play',
@@ -20,21 +18,17 @@ export enum TrackSkipPayload {
 
 export type AudioTime = OrUndefined<number>;
 
-export type AudioVolume = OrUndefined<number>;
+export type AudioVolume = number;
 
 export type DragRatio = OrNull<number>;
 
 export interface NedPlayerContextValue {
-    audioDuration: AudioTime;
-    audioTime: AudioTime;
     currentTrack: CurrentTrack;
-    formattedDuration: string;
-    formattedTime: string;
     handleLoopChange: () => void;
     handlePlayPause: (payload: PlayPausePayload) => void;
     handleSeek: (ratio: number) => void;
     handleSkip: (payload: TrackSkipPayload) => void;
-    handleStop: (resetTime?: boolean) => void;
+    handleStop: () => void;
     handleVolumeChange: (newVolume: number) => void;
     handleVolumeToggle: () => void;
     isPlaying: boolean;
@@ -44,10 +38,33 @@ export interface NedPlayerContextValue {
     volume: AudioVolume;
 }
 
+export interface NedPlayerTimeContextValue {
+    audioDuration: number;
+    audioTime: number;
+    formattedDuration: string;
+    formattedTime: string;
+}
+
 export interface NedPlayerProviderProps {
     children: ReactNode;
     playlist: Playlist;
 }
+
+export interface NedPlayerTimeProviderProps {
+    audioRef: AudioRef;
+    children: ReactNode;
+}
+
+export interface Shortcuts {
+    togglePlay: () => void;
+    toggleMute: () => void;
+}
+
+export interface AudioEngineOptions {
+    src?: string;
+    onEnded: () => void;
+}
+
 
 export interface ITrack {
     artist?: string;

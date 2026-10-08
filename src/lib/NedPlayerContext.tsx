@@ -1,172 +1,97 @@
+import { createContext, FC, useContext, useRef } from 'react';
 import {
-    createContext,
-    FC,
-    useContext,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
-import AudioElement from './AudioElement.tsx';
-import {
-    TrackSkipPayload,
-    OrUndefined,
+    ILoop,
     NedPlayerContextValue,
     NedPlayerProviderProps,
-    CurrentTrack,
-    ILoop,
+    OrUndefined,
     PlayPausePayload,
-} from './types.ts';
-import { formatAudioTime, normalizePlaylist, shuffleArr } from './utils.ts';
-import useAudioEngine from './hooks/useAudioEngine.tsx';
+    TrackSkipPayload,
+} from './types';
+import { NedPlayerTimeProvider } from './NedPlayerTimeContext';
+import usePlaylist from './hooks/usePlaylist';
+import useAudioEngine from './hooks/useAudioEngine';
+import useKeyboardShortcuts from './hooks/useKeyboardShortcuts';
 
 const NedPlayerContext = createContext<OrUndefined<NedPlayerContextValue>>(undefined);
 
-export const NedPlayerProvider: FC<NedPlayerProviderProps> = ({
-    children,
-    playlist,
-}) => {
-    const [normalizedPlaylist, setNormalizedPlaylist] = useState<CurrentTrack[]>(() => normalizePlaylist(playlist));
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [isShuffle, setIsShuffle] = useState(false);
-    const [loop, setLoop] = useState<ILoop>(ILoop.None);
-
+export const NedPlayerProvider: FC<NedPlayerProviderProps> = ({ children, playlist }) => {
     const audioRef = useRef<HTMLAudioElement>(null);
-    // Saving a ref to an unshuffledPlaylist playlist to reset to it when unshuffling
-    const unshuffledPlaylist = useRef<CurrentTrack[]>([]);
+    const queue = usePlaylist(playlist);
+    const engine = useAudioEngine(audioRef, {
+        src: queue.currentTrack?.audioSrc,
+        onEnded: () => skip(TrackSkipPayload.Next),
+    });
 
-    const {
-        audioDuration,
-        audioTime,
-        handlePlayPause,
-        handleSeek,
-        handleVolumeChange,
-        handleVolumeToggle,
-        isPlaying,
-        loopTrack,
-        volume,
-    } = useAudioEngine(
-        audioRef,
-        loop,
-        handleChangeTrack,
-        normalizedPlaylist.length,
-        currentIndex,
-    );
-
-    // Normalizing playlist if changed from props
-    useEffect(() => {
-        const normalized = normalizePlaylist(playlist);
-
-        setNormalizedPlaylist(normalized);
-        unshuffledPlaylist.current = normalized;
-    }, [playlist]);
-
-    function handleSkip(payload: TrackSkipPayload): void {
-        if (loop === ILoop.Track) {
-            loopTrack();
-        } else {
-            handleChangeTrack(payload);
-        }
-    }
-
-    function handleChangeTrack(payload: TrackSkipPayload): void {
-        const length = normalizedPlaylist.length;
-
-        if (length === 0) {
+    function skip(direction: TrackSkipPayload): void {
+        if (queue.loop === ILoop.Track) {
+            engine.restart();
             return;
         }
 
-        const lastIdx = length - 1;
-        const isLoopPlaylist = loop === ILoop.Playlist;
+        const target = queue.getSkipTarget(direction);
 
-        if (payload === TrackSkipPayload.Next) {
-            const next = currentIndex + 1;
-
-            // Stop the playing if not in playlist loop and it's the last track
-            if (!isLoopPlaylist && next > lastIdx) {
-                handlePlayPause(PlayPausePayload.Pause, true);
-                return;
-            }
-
-            // Clamping to 0 if reached the end of a looped playlist
-            const nextLooped = next % length;
-
-            setCurrentIndex(isLoopPlaylist ? nextLooped : next);
+        if (target === null) {
+            engine.stop(); // edge of a non-looped playlist
+        } else if (target === queue.position) {
+            engine.restart(); // looped playlist with a single track
         } else {
-            const prev = currentIndex - 1;
-
-            // Stop the playing if not in playlist loop and it's the first track
-            if (!isLoopPlaylist && prev < 0) {
-                handlePlayPause(PlayPausePayload.Pause, true);
-                return;
-            }
-
-            // Clamping to the last element of a looped playlist if reached the first track
-            const prevLooped = (prev + length) % length;
-
-            setCurrentIndex(isLoopPlaylist ? prevLooped : prev);
+            queue.goTo(target); // the engine autoplays the new src if playing
         }
     }
 
-    function shufflePlaylist(): void {
-        const newIsShuffle = !isShuffle;
-        const currentTrack = normalizedPlaylist[currentIndex];
-
-        if (newIsShuffle) {
-            const filtered = normalizedPlaylist.filter((track) => track?.id !== currentTrack?.id);
-            const shuffled = [currentTrack, ...shuffleArr(filtered)];
-
-            setNormalizedPlaylist(shuffled);
-            setCurrentIndex(0);
+    function seek(ratio: number): void {
+        if (ratio >= 1) {
+            skip(TrackSkipPayload.Next);
         } else {
-            const foundIndex = unshuffledPlaylist.current.findIndex((track) => track?.id === currentTrack?.id);
-
-            if (foundIndex !== -1) {
-                setNormalizedPlaylist(unshuffledPlaylist.current);
-                setCurrentIndex(foundIndex);
-            }
+            engine.seek(ratio);
         }
-
-        setIsShuffle(newIsShuffle);
     }
 
-    function handleLoopChange(): void {
-        setLoop((loop + 1) % 3);
+    function playPause(payload: PlayPausePayload): void {
+        if (payload === PlayPausePayload.Play) {
+            engine.play();
+        } else {
+            engine.pause();
+        }
     }
+
+    useKeyboardShortcuts({
+        togglePlay: () => playPause(engine.isPlaying ? PlayPausePayload.Pause : PlayPausePayload.Play),
+        toggleMute: engine.toggleMute,
+    });
+
+    const value: NedPlayerContextValue = {
+        currentTrack: queue.currentTrack,
+        handleLoopChange: queue.cycleLoop,
+        handlePlayPause: playPause,
+        handleSeek: seek,
+        handleSkip: skip,
+        handleStop: engine.stop,
+        handleVolumeChange: engine.setVolume,
+        handleVolumeToggle: engine.toggleMute,
+        isPlaying: engine.isPlaying,
+        isShuffle: queue.isShuffle,
+        loop: queue.loop,
+        shufflePlaylist: queue.toggleShuffle,
+        volume: engine.volume,
+    };
 
     return (
-        <NedPlayerContext.Provider
-            value={{
-                audioDuration,
-                audioTime,
-                currentTrack: normalizedPlaylist[currentIndex],
-                formattedDuration: formatAudioTime(audioDuration),
-                formattedTime: formatAudioTime(audioTime),
-                handleLoopChange,
-                handlePlayPause,
-                handleSeek,
-                handleSkip,
-                handleStop: () => { handlePlayPause(PlayPausePayload.Pause, true) },
-                handleVolumeChange,
-                handleVolumeToggle,
-                isPlaying,
-                isShuffle,
-                loop,
-                shufflePlaylist,
-                volume,
-            }}
-        >
-            <AudioElement ref={audioRef} />
-            {children}
+        <NedPlayerContext.Provider value={value}>
+            <audio ref={audioRef} src={queue.currentTrack?.audioSrc} preload='metadata' />
+            <NedPlayerTimeProvider audioRef={audioRef}>
+                {children}
+            </NedPlayerTimeProvider>
         </NedPlayerContext.Provider>
     );
 };
 
 export const useNedPlayerContext = (): NedPlayerContextValue => {
     const context = useContext(NedPlayerContext);
+
     if (!context) {
-        throw new Error(
-            'useNedPlayerContext must be used within a GlobalPlayerProvider',
-        );
+        throw new Error('useNedPlayerContext must be used within a NedPlayerProvider');
     }
+
     return context;
 };
